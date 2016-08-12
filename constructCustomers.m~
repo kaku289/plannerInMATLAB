@@ -1,0 +1,38 @@
+%%
+clc; clear; 
+
+%% Required Inputs
+points = [51.9913069	4.3782904;
+          51.9907219	4.3787221];
+      
+nCustomers = 12;
+
+depot = [51.9909563 	4.3781332];
+
+%% Compute intermediate points from the end points
+      
+E = wgs84Ellipsoid;
+p0 = points(1,:);
+
+[xEast,yNorth,zUp] = geodetic2enu(points(:,1),points(:,2),0,p0(1),p0(2),0,E);
+
+dist = sqrt(diff(xEast).^2+diff(yNorth).^2)/nCustomers;
+theta = atan2(diff(yNorth), diff(xEast));
+
+dx = dist*cos(theta);
+dy = dist*sin(theta);
+
+C = zeros(nCustomers,2);
+C(1,:) = [xEast(1) yNorth(1)];
+C(end,:) = [xEast(2) yNorth(2)];
+
+for i=2:nCustomers-1
+    C(i,:) = C(i-1,:)+ [dx dy];
+end
+
+[lat,lon,h] = enu2geodetic(C(:,1),C(:,2),0,p0(1),p0(2),0,E);
+
+%% Create file containing ENU coordinates of the points (to be used for the purpose of the optimization)
+
+
+
